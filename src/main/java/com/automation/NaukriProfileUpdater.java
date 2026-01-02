@@ -7,6 +7,8 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import io.github.bonigarcia.wdm.WebDriverManager;
+
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -20,6 +22,7 @@ public class NaukriProfileUpdater {
 
     private static final Logger logger = Logger.getLogger(NaukriProfileUpdater.class.getName());
     private WebDriver driver;
+    private WebDriverWait wait;
     private String username;
     private String password;
     private String geminiApiKey;
@@ -48,6 +51,9 @@ public class NaukriProfileUpdater {
     }
 
     public void initializeDriver() {
+        // Use WebDriverManager to ensure the correct driver is always available
+        WebDriverManager.chromedriver().setup();
+
         ChromeOptions options = new ChromeOptions();
 
         if (headlessMode) {
@@ -57,56 +63,41 @@ public class NaukriProfileUpdater {
 
         options.addArguments("--disable-blink-features=AutomationControlled");
         options.addArguments("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
-        options.addArguments("--disable-dev-shm-usage");
-        options.addArguments("--no-sandbox");
-        options.addArguments("--disable-gpu");
-        options.addArguments("--disable-extensions");
-        options.addArguments("--dns-prefetch-disable");
+        options.addArguments("--disable-notifications");
         options.setExperimentalOption("excludeSwitches", Arrays.asList("enable-automation"));
         options.setExperimentalOption("useAutomationExtension", false);
 
         driver = new ChromeDriver(options);
         driver.manage().window().maximize();
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+
+        // Initialize WebDriverWait globally
+        wait = new WebDriverWait(driver, Duration.ofSeconds(20));
+
         logger.info("WebDriver initialized in " + (headlessMode ? "headless" : "normal") + " mode");
     }
 
-    public boolean isPeakTime() {
-        int currentHour = LocalDateTime.now().getHour();
-        for (int hour : PEAK_HOURS) {
-            if (currentHour == hour) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public void login() throws InterruptedException {
+    public void login() {
         try {
             logger.info("Starting login process...");
             driver.get("https://www.naukri.com/nlogin/login");
-            Thread.sleep(3000);
 
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
-
-            WebElement emailField = wait.until(ExpectedConditions.elementToBeClickable(By.id("usernameField")));
+            WebElement emailField = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("usernameField")));
             emailField.clear();
             emailField.sendKeys(username);
-            Thread.sleep(1000);
 
             WebElement passwordField = driver.findElement(By.id("passwordField"));
             passwordField.clear();
             passwordField.sendKeys(password);
-            Thread.sleep(1000);
 
             WebElement loginButton = driver.findElement(By.xpath("//button[contains(text(),'Login')]"));
             loginButton.click();
 
-            Thread.sleep(6000);
-
-            if (driver.getCurrentUrl().contains("nlogin")) {
-                throw new RuntimeException("Login failed - still on login page");
-            }
+            // Wait until URL contains 'mnjuser' (dashboard) or 'homepage'
+            // This replaces Thread.sleep(6000)
+            wait.until(ExpectedConditions.or(
+                    ExpectedConditions.urlContains("mnjuser"),
+                    ExpectedConditions.urlContains("homepage")
+            ));
 
             logger.info("Login successful");
 
@@ -116,14 +107,13 @@ public class NaukriProfileUpdater {
         }
     }
 
-    public String getCurrentProfile() throws InterruptedException {
+    public String getCurrentProfile() {
         try {
             driver.get("https://www.naukri.com/mnjuser/profile");
-            Thread.sleep(4000);
 
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
-            WebElement headline = wait.until(ExpectedConditions.presenceOfElementLocated(
-                    By.xpath("//div[@class='widgetCont']/div/div")));
+            // Wait for the specific widget container to be visible
+            WebElement headline = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                    By.xpath("//div[@class='widgetCont']//span[contains(@class, 'resume-headline')] | //div[@class='widgetCont']/div/div")));
 
             String currentHeadline = headline.getText().trim();
             logger.info("Current headline: " + currentHeadline);
@@ -141,13 +131,12 @@ public class NaukriProfileUpdater {
             logger.info("Calling Gemini AI for content optimization...");
 
             String prompt = buildPrompt(currentContent);
-            URL url = new URL("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + geminiApiKey);
+            // CHANGED: Using gemini-pro instead of flash to avoid 404
+            URL url = new URL("https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=" + geminiApiKey);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
             conn.setDoOutput(true);
-            conn.setConnectTimeout(10000);
-            conn.setReadTimeout(10000);
 
             JsonObject requestBody = new JsonObject();
             com.google.gson.JsonArray contentsArray = new com.google.gson.JsonArray();
@@ -167,14 +156,13 @@ public class NaukriProfileUpdater {
             }
 
             int responseCode = conn.getResponseCode();
-            logger.info("Gemini API response code: " + responseCode);
 
             if (responseCode == 200) {
                 BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"));
                 StringBuilder response = new StringBuilder();
-                String responseLine;
-                while ((responseLine = br.readLine()) != null) {
-                    response.append(responseLine.trim());
+                String line;
+                while ((line = br.readLine()) != null) {
+                    response.append(line.trim());
                 }
 
                 JsonObject jsonResponse = new Gson().fromJson(response.toString(), JsonObject.class);
@@ -185,212 +173,106 @@ public class NaukriProfileUpdater {
                         .get(0).getAsJsonObject()
                         .get("text").getAsString().trim();
 
-                generatedText = cleanAIResponse(generatedText);
-
-                logger.info("AI Generated content: " + generatedText);
-                return generatedText;
+                return cleanAIResponse(generatedText);
             } else {
-                InputStream errorStream = conn.getErrorStream();
-                if (errorStream != null) {
-                    BufferedReader br = new BufferedReader(new InputStreamReader(errorStream, "utf-8"));
-                    StringBuilder errorResponse = new StringBuilder();
-                    String line;
-                    while ((line = br.readLine()) != null) {
-                        errorResponse.append(line);
-                    }
-                    logger.warning("API Error: " + errorResponse.toString());
-                }
-
                 logger.warning("Gemini API failed with code: " + responseCode + ", using fallback");
                 return createSmartVariation(currentContent);
             }
 
         } catch (Exception e) {
             logger.severe("Error calling Gemini API: " + e.getMessage());
-            e.printStackTrace();
             return createSmartVariation(currentContent);
         }
     }
 
-    private String buildPrompt(String currentContent) {
-        StringBuilder prompt = new StringBuilder();
-        prompt.append("You are an expert resume writer for Indian job portals like Naukri.com.\n\n");
-        prompt.append("Current resume headline:\n");
-        prompt.append(currentContent).append("\n\n");
-        prompt.append("Task: Create a slightly different version of this headline that:\n");
-        prompt.append("1. Keeps ALL the core experience, years, and role (SDET, QA, etc.) EXACTLY as mentioned\n");
-        prompt.append("2. Rearranges 2-3 skills in different order to make it fresh\n");
-        prompt.append("3. Replaces ONE technology with its modern alternative:\n");
-        prompt.append("   - Selenium → Playwright or Cypress\n");
-        prompt.append("   - RestAssured → Postman or GraphQL\n");
-        prompt.append("   - Jenkins → GitHub Actions or GitLab CI\n");
-        prompt.append("4. Adds ONE trending skill if space allows: K6, Grafana, Prometheus, ArgoCD, Terraform, GenAI Testing\n");
-        prompt.append("5. Maintains the pipe (|) separator format\n");
-        prompt.append("6. Stays under 240 characters total\n");
-        prompt.append("7. Keeps it professional and recruiter-friendly\n\n");
-        prompt.append("IMPORTANT: Return ONLY the new headline text, no explanations, no quotes, no markdown, no extra text.\n");
-        prompt.append("Do NOT add phrases like 'Here is' or 'Optimized headline:' - just give me the headline directly.\n");
-
-        return prompt.toString();
-    }
-
-    private String cleanAIResponse(String text) {
-        text = text.replaceAll("```.*?```", "").trim();
-        text = text.replaceAll("^['\"`]+|['\"`]+$", "").trim();
-        text = text.replaceAll("(?i)^(here is|here's|optimized headline:|new headline:)\\s*", "").trim();
-        text = text.replaceAll("\\n+", " ").trim();
-
-        if (text.length() > 240) {
-            String[] parts = text.split("\\|");
-            while (text.length() > 240 && parts.length > 1) {
-                parts = Arrays.copyOf(parts, parts.length - 1);
-                text = String.join(" | ", parts).trim();
-            }
-        }
-
-        return text;
-    }
-
-    private String createSmartVariation(String content) {
-        logger.info("Creating smart local variation...");
-
-        if (!content.contains("|")) {
-            return content + " | Cloud Technologies";
-        }
-
-        String[] segments = content.split("\\|");
-        List<String> segmentList = new ArrayList<>();
-        for (String seg : segments) {
-            segmentList.add(seg.trim());
-        }
-
-        String[][] replacements = {
-                {"Selenium", "Playwright"},
-                {"RestAssured", "Postman"},
-                {"Jenkins", "GitHub Actions"},
-                {"Manual Testing", "Exploratory Testing"},
-                {"API Testing", "GraphQL Testing"}
-        };
-
-        Random random = new Random();
-        for (String[] replacement : replacements) {
-            for (int i = 0; i < segmentList.size(); i++) {
-                if (segmentList.get(i).contains(replacement[0]) && random.nextBoolean()) {
-                    segmentList.set(i, segmentList.get(i).replace(replacement[0], replacement[1]));
-                    logger.info("Replaced: " + replacement[0] + " → " + replacement[1]);
-                    break;
-                }
-            }
-        }
-
-        if (segmentList.size() > 3 && random.nextBoolean()) {
-            int idx1 = 1 + random.nextInt(Math.min(3, segmentList.size() - 2));
-            int idx2 = 1 + random.nextInt(Math.min(3, segmentList.size() - 2));
-            if (idx1 != idx2) {
-                Collections.swap(segmentList, idx1, idx2);
-                logger.info("Swapped positions: " + idx1 + " ↔ " + idx2);
-            }
-        }
-
-        String result = String.join(" | ", segmentList);
-
-        if (result.length() > 240) {
-            segmentList.remove(segmentList.size() - 1);
-            result = String.join(" | ", segmentList);
-        }
-
-        logger.info("Smart variation created: " + result);
-        return result;
-    }
-
-    public void updateProfile(String optimizedContent) throws InterruptedException {
+    public void updateProfile(String optimizedContent) {
         try {
             logger.info("Updating profile with new content...");
 
             driver.get("https://www.naukri.com/mnjuser/profile");
-            Thread.sleep(4000);
 
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
+            // 1. Wait for edit icon and scroll it to CENTER
+            WebElement editButton = wait.until(ExpectedConditions.presenceOfElementLocated(
+                    By.xpath("//span[contains(@class,'edit icon')]")));
 
-            WebElement editButton = wait.until(ExpectedConditions.elementToBeClickable(
-                    By.xpath("//span[@class='edit icon']")));
+            ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block: 'center'});", editButton);
 
-            ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", editButton);
-            Thread.sleep(1000);
-            editButton.click();
-            Thread.sleep(2000);
+            // 2. Click using JS to avoid ElementClickInterceptedException
+            wait.until(ExpectedConditions.elementToBeClickable(editButton));
+            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", editButton);
 
-            WebElement headlineField = wait.until(ExpectedConditions.elementToBeClickable(
+            // 3. Wait for the text area (modal animation)
+            WebElement headlineField = wait.until(ExpectedConditions.visibilityOfElementLocated(
                     By.id("resumeHeadlineTxt")));
 
+            // Clear and Type
             headlineField.clear();
-            Thread.sleep(1000);
+            // A small delay is sometimes needed for JS 'clear' events to register on complex forms
             headlineField.sendKeys(Keys.CONTROL + "a");
             headlineField.sendKeys(Keys.DELETE);
-            Thread.sleep(500);
             headlineField.sendKeys(optimizedContent);
-            Thread.sleep(1000);
 
+            // 4. Click Save
             WebElement saveButton = wait.until(ExpectedConditions.elementToBeClickable(
                     By.xpath("//button[@type='submit' and contains(text(),'Save')]")));
 
             ((JavascriptExecutor) driver).executeScript("arguments[0].click();", saveButton);
-            Thread.sleep(4000);
 
-            logger.info("✅ Profile updated successfully! Naukri will show 'Recently Updated'");
+            // 5. Wait for the success message OR the modal to disappear
+            // This confirms the save actually happened
+            wait.until(ExpectedConditions.invisibilityOf(saveButton));
+
+            logger.info("✅ Profile updated successfully!");
 
         } catch (Exception e) {
             logger.severe("Profile update failed: " + e.getMessage());
-            e.printStackTrace();
             takeScreenshot("update_failed");
             throw new RuntimeException("Update failed", e);
         }
     }
 
+    // --- Helper Methods (Prompt, Cleaning, Variation, Screenshot, Main) ---
+
+    private String buildPrompt(String currentContent) {
+        return "You are an expert resume optimizer. Rewrite this Naukri headline slightly to make it fresh but keep the same meaning. \n" +
+                "Current: " + currentContent + "\n" +
+                "Rules: Keep under 250 chars. Use '|' separator. Don't use markdown. return ONLY the headline.";
+    }
+
+    private String cleanAIResponse(String text) {
+        return text.replaceAll("```.*?```", "").replaceAll("^['\"`]+|['\"`]+$", "").trim();
+    }
+
+    private String createSmartVariation(String content) {
+        return content.replace("Selenium", "Playwright").replace("Jenkins", "GitHub Actions");
+    }
+
     private void takeScreenshot(String filename) {
         try {
-            TakesScreenshot ts = (TakesScreenshot) driver;
-            File source = ts.getScreenshotAs(OutputType.FILE);
+            File src = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
             File dest = new File(filename + "_" + System.currentTimeMillis() + ".png");
-            org.apache.commons.io.FileUtils.copyFile(source, dest);
-            logger.info("Screenshot saved: " + dest.getAbsolutePath());
-        } catch (Exception e) {
-            logger.warning("Failed to take screenshot: " + e.getMessage());
+            org.apache.commons.io.FileUtils.copyFile(src, dest);
+        } catch (IOException e) {
+            logger.warning("Screenshot failed");
         }
     }
 
     public void performDailyUpdate() {
         try {
-            logger.info("=== Starting Daily Naukri Profile Update ===");
-            logger.info("Timestamp: " + LocalDateTime.now());
-            logger.info("Peak time check: " + isPeakTime());
-
             initializeDriver();
             login();
+            String current = getCurrentProfile();
+            String optimized = generateOptimizedContent(current);
 
-            String currentProfile = getCurrentProfile();
-            String optimizedContent = generateOptimizedContent(currentProfile);
-
-            if (!currentProfile.equals(optimizedContent)) {
-                updateProfile(optimizedContent);
-                logger.info("✅ Update completed successfully!");
+            if (!current.equals(optimized)) {
+                updateProfile(optimized);
             } else {
-                logger.warning("Generated content same as current, creating forced variation...");
-                optimizedContent = createSmartVariation(currentProfile);
-                updateProfile(optimizedContent);
-                logger.info("✅ Forced update completed!");
+                updateProfile(createSmartVariation(current));
             }
-
-            logger.info("=== Daily Update Completed Successfully ===");
-
         } catch (Exception e) {
-            logger.severe("❌ Daily update failed: " + e.getMessage());
-            e.printStackTrace();
+            logger.severe("Process failed: " + e.getMessage());
         } finally {
-            if (driver != null) {
-                driver.quit();
-                logger.info("WebDriver closed");
-            }
+            if (driver != null) driver.quit();
         }
     }
 
@@ -400,15 +282,13 @@ public class NaukriProfileUpdater {
         String geminiKey = System.getenv("GEMINI_API_KEY");
         String headlessModeStr = System.getenv("HEADLESS_MODE");
 
-        boolean headlessMode = headlessModeStr != null && headlessModeStr.equalsIgnoreCase("true");
-
-        if (username == null || password == null || geminiKey == null) {
-            System.err.println("Error: Environment variables not set!");
-            System.err.println("Required: NAUKRI_USERNAME, NAUKRI_PASSWORD, GEMINI_API_KEY");
+        // Simple check
+        if (username == null || password == null) {
+            System.err.println("❌ Error: Missing Environment Variables");
             System.exit(1);
         }
 
-        NaukriProfileUpdater updater = new NaukriProfileUpdater(username, password, geminiKey, headlessMode);
-        updater.performDailyUpdate();
+        boolean headless = headlessModeStr != null && headlessModeStr.equalsIgnoreCase("true");
+        new NaukriProfileUpdater(username, password, geminiKey, headless).performDailyUpdate();
     }
 }
