@@ -1,0 +1,211 @@
+Jan 02, 2026 11:34:02 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: === Starting Daily Naukri Profile Update ===
+Jan 02, 2026 11:34:02 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: Current time: 2026-01-02T11:34:02.356885900
+Jan 02, 2026 11:34:02 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: Is peak time: true
+Jan 02, 2026 11:34:05 AM com.automation.NaukriProfileUpdater initializeDriver
+INFO: WebDriver initialized successfully
+Jan 02, 2026 11:34:05 AM com.automation.NaukriProfileUpdater login
+INFO: Starting login process...
+Jan 02, 2026 11:34:31 AM com.automation.NaukriProfileUpdater login
+SEVERE: Login failed: Expected condition failed: waiting for element to be clickable: By.cssSelector: input[placeholder='Enter your active Email ID / Username'] (tried for 15 second(s) with 500 milliseconds interval)
+Build info: version: '4.15.0', revision: '1d14b5521b'
+System info: os.name: 'Windows 11', os.arch: 'amd64', os.version: '10.0', java.version: '22.0.1'
+Driver info: org.openqa.selenium.chrome.ChromeDriver
+Capabilities {acceptInsecureCerts: false, browserName: chrome, browserVersion: 134.0.6998.119, chrome: {chromedriverVersion: 134.0.6998.165 (fd886e2cb29..., userDataDir: C:\Users\heman\AppData\Loca...}, fedcm:accounts: true, goog:chromeOptions: {debuggerAddress: localhost:49818}, networkConnectionEnabled: false, pageLoadStrategy: normal, platformName: windows, proxy: Proxy(), se:cdp: ws://localhost:49818/devtoo..., se:cdpVersion: 134.0.6998.119, setWindowRect: true, strictFileInteractability: false, timeouts: {implicit: 0, pageLoad: 300000, script: 30000}, unhandledPromptBehavior: dismiss and notify, webauthn:extension:credBlob: true, webauthn:extension:largeBlob: true, webauthn:extension:minPinLength: true, webauthn:extension:prf: true, webauthn:virtualAuthenticators: true}
+Session ID: e55c061e36f6e39e73726749bab5deb4
+Jan 02, 2026 11:34:31 AM com.automation.NaukriProfileUpdater performDailyUpdate
+SEVERE: Daily update failed: Login failed
+Jan 02, 2026 11:34:31 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: WebDriver closed
+Jan 02, 2026 11:36:25 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: === Starting Daily Naukri Profile Update ===
+Jan 02, 2026 11:36:25 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: Current time: 2026-01-02T11:36:25.585484400
+Jan 02, 2026 11:36:25 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: Is peak time: true
+Jan 02, 2026 11:36:26 AM com.automation.NaukriProfileUpdater initializeDriver
+INFO: WebDriver initialized successfully
+Jan 02, 2026 11:36:26 AM com.automation.NaukriProfileUpdater login
+INFO: Starting login process...
+Jan 02, 2026 11:36:35 AM com.automation.NaukriProfileUpdater login
+INFO: Login successful
+Jan 02, 2026 11:36:39 AM com.automation.NaukriProfileUpdater getCurrentProfile
+INFO: Current headline: Resume headline
+Jan 02, 2026 11:36:39 AM com.automation.NaukriProfileUpdater generateOptimizedContent
+INFO: Generating optimized content using Gemini AI...
+Jan 02, 2026 11:36:39 AM com.automation.NaukriProfileUpdater generateOptimizedContent
+WARNING: API returned error code: 404
+Jan 02, 2026 11:36:39 AM com.automation.NaukriProfileUpdater updateProfile
+INFO: Updating profile with optimized content...
+Jan 02, 2026 11:37:06 AM com.automation.NaukriProfileUpdater updateProfile
+SEVERE: Profile update failed: Expected condition failed: waiting for element to be clickable: By.cssSelector: textarea[name='resumeHeadline'], input[id='resumeHeadlineTxt'] (tried for 15 second(s) with 500 milliseconds interval)
+Build info: version: '4.15.0', revision: '1d14b5521b'
+System info: os.name: 'Windows 11', os.arch: 'amd64', os.version: '10.0', java.version: '22.0.1'
+Driver info: org.openqa.selenium.chrome.ChromeDriver
+Capabilities {acceptInsecureCerts: false, browserName: chrome, browserVersion: 134.0.6998.119, chrome: {chromedriverVersion: 134.0.6998.165 (fd886e2cb29..., userDataDir: C:\Users\heman\AppData\Loca...}, fedcm:accounts: true, goog:chromeOptions: {debuggerAddress: localhost:53955}, networkConnectionEnabled: false, pageLoadStrategy: normal, platformName: windows, proxy: Proxy(), se:cdp: ws://localhost:53955/devtoo..., se:cdpVersion: 134.0.6998.119, setWindowRect: true, strictFileInteractability: false, timeouts: {implicit: 0, pageLoad: 300000, script: 30000}, unhandledPromptBehavior: dismiss and notify, webauthn:extension:credBlob: true, webauthn:extension:largeBlob: true, webauthn:extension:minPinLength: true, webauthn:extension:prf: true, webauthn:virtualAuthenticators: true}
+Session ID: fc5ef21b785a909423a8af21f5058939
+Jan 02, 2026 11:37:06 AM com.automation.NaukriProfileUpdater performDailyUpdate
+SEVERE: Daily update failed: Update failed
+Jan 02, 2026 11:37:06 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: WebDriver closed
+Jan 02, 2026 11:40:52 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: === Starting Daily Naukri Profile Update ===
+Jan 02, 2026 11:40:52 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: Current time: 2026-01-02T11:40:52.626622200
+Jan 02, 2026 11:40:52 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: Is peak time: true
+Jan 02, 2026 11:40:54 AM com.automation.NaukriProfileUpdater initializeDriver
+INFO: WebDriver initialized successfully
+Jan 02, 2026 11:40:54 AM com.automation.NaukriProfileUpdater login
+INFO: Starting login process...
+Jan 02, 2026 11:41:02 AM com.automation.NaukriProfileUpdater login
+INFO: Login successful
+Jan 02, 2026 11:41:06 AM com.automation.NaukriProfileUpdater getCurrentProfile
+INFO: Current headline: SDET (3 Yrs) | Software Quality Assurance | Java Automation Specialist | Solo Automation Engineer | Manual Testing | API & UI (Selenium, Playwright, RestAssured) | Banking & Fintech Domain | CI/CD & AWS Expert
+Jan 02, 2026 11:41:06 AM com.automation.NaukriProfileUpdater generateOptimizedContent
+INFO: Generating optimized content using Gemini AI...
+Jan 02, 2026 11:41:07 AM com.automation.NaukriProfileUpdater generateOptimizedContent
+WARNING: API returned error code: 404
+Jan 02, 2026 11:41:07 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: Profile already optimized, no changes needed
+Jan 02, 2026 11:41:07 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: === Daily Update Completed Successfully ===
+Jan 02, 2026 11:41:07 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: WebDriver closed
+Jan 02, 2026 11:45:30 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: === Starting Daily Naukri Profile Update ===
+Jan 02, 2026 11:45:30 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: Current time: 2026-01-02T11:45:30.064382800
+Jan 02, 2026 11:45:30 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: Is peak time: true
+Jan 02, 2026 11:45:31 AM com.automation.NaukriProfileUpdater performDailyUpdate
+SEVERE: Daily update failed: unknown error: JavaScript code failed
+from unknown command: 'Runtime.evaluate' wasn't found
+  (Session info: chrome=134.0.6998.119)
+Build info: version: '4.15.0', revision: '1d14b5521b'
+System info: os.name: 'Windows 11', os.arch: 'amd64', os.version: '10.0', java.version: '22.0.1'
+Driver info: org.openqa.selenium.chrome.ChromeDriver
+Command: [721c4284693ba36b4686d4d44bf18ad5, maximizeCurrentWindow {}]
+Capabilities {acceptInsecureCerts: false, browserName: chrome, browserVersion: 134.0.6998.119, chrome: {chromedriverVersion: 134.0.6998.165 (fd886e2cb29..., userDataDir: C:\Users\heman\AppData\Loca...}, fedcm:accounts: true, goog:chromeOptions: {debuggerAddress: localhost:57662}, networkConnectionEnabled: false, pageLoadStrategy: normal, platformName: windows, proxy: Proxy(), se:cdp: ws://localhost:57662/devtoo..., se:cdpVersion: 134.0.6998.119, setWindowRect: true, strictFileInteractability: false, timeouts: {implicit: 0, pageLoad: 300000, script: 30000}, unhandledPromptBehavior: dismiss and notify, webauthn:extension:credBlob: true, webauthn:extension:largeBlob: true, webauthn:extension:minPinLength: true, webauthn:extension:prf: true, webauthn:virtualAuthenticators: true}
+Session ID: 721c4284693ba36b4686d4d44bf18ad5
+Jan 02, 2026 11:45:31 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: WebDriver closed
+Jan 02, 2026 11:45:39 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: === Starting Daily Naukri Profile Update ===
+Jan 02, 2026 11:45:39 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: Current time: 2026-01-02T11:45:39.776004700
+Jan 02, 2026 11:45:39 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: Is peak time: true
+Jan 02, 2026 11:45:41 AM com.automation.NaukriProfileUpdater initializeDriver
+INFO: WebDriver initialized successfully
+Jan 02, 2026 11:45:41 AM com.automation.NaukriProfileUpdater login
+INFO: Starting login process...
+Jan 02, 2026 11:45:49 AM com.automation.NaukriProfileUpdater login
+INFO: Login successful
+Jan 02, 2026 11:45:53 AM com.automation.NaukriProfileUpdater getCurrentProfile
+INFO: Current headline: SDET (3 Yrs) | Software Quality Assurance | Java Automation Specialist | Solo Automation Engineer | Manual Testing | API & UI (Selenium, Playwright, RestAssured) | Banking & Fintech Domain | CI/CD & AWS Expert
+Jan 02, 2026 11:45:53 AM com.automation.NaukriProfileUpdater generateOptimizedContent
+INFO: Generating optimized content using Gemini AI...
+Jan 02, 2026 11:45:53 AM com.automation.NaukriProfileUpdater generateOptimizedContent
+WARNING: API returned error code: 404
+Jan 02, 2026 11:45:53 AM com.automation.NaukriProfileUpdater generateOptimizedContent
+WARNING: Error response: {  "error": {    "code": 404,    "message": "models/gemini-pro is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",    "status": "NOT_FOUND"  }}
+Jan 02, 2026 11:45:53 AM com.automation.NaukriProfileUpdater addIntelligentVariation
+INFO: Adding intelligent variation to content...
+Jan 02, 2026 11:45:53 AM com.automation.NaukriProfileUpdater addIntelligentVariation
+INFO: Original: SDET (3 Yrs) | Software Quality Assurance | Java Automation Specialist | Solo Automation Engineer | Manual Testing | API & UI (Selenium, Playwright, RestAssured) | Banking & Fintech Domain | CI/CD & AWS Expert
+Jan 02, 2026 11:45:53 AM com.automation.NaukriProfileUpdater addIntelligentVariation
+INFO: Optimized with variation: SDET (3 Yrs)   |   Software Quality Assurance   |   Java Automation Specialist   |   Solo Automation Engineer   |   Manual Testing   |   API & UI (Selenium, Playwright, RestAssured)   |   Banking & Fintech Domain   |   CI/CD & AWS Expert
+Jan 02, 2026 11:45:53 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: Force update enabled - updating profile to trigger 'Recently Updated' status
+Jan 02, 2026 11:45:53 AM com.automation.NaukriProfileUpdater updateProfile
+INFO: Updating profile with optimized content...
+Jan 02, 2026 11:46:19 AM com.automation.NaukriProfileUpdater updateProfile
+SEVERE: Profile update failed: Expected condition failed: waiting for element to be clickable: By.cssSelector: textarea[name='resumeHeadline'], input[id='resumeHeadlineTxt'] (tried for 15 second(s) with 500 milliseconds interval)
+Build info: version: '4.15.0', revision: '1d14b5521b'
+System info: os.name: 'Windows 11', os.arch: 'amd64', os.version: '10.0', java.version: '22.0.1'
+Driver info: org.openqa.selenium.chrome.ChromeDriver
+Capabilities {acceptInsecureCerts: false, browserName: chrome, browserVersion: 134.0.6998.119, chrome: {chromedriverVersion: 134.0.6998.165 (fd886e2cb29..., userDataDir: C:\Users\heman\AppData\Loca...}, fedcm:accounts: true, goog:chromeOptions: {debuggerAddress: localhost:57685}, networkConnectionEnabled: false, pageLoadStrategy: normal, platformName: windows, proxy: Proxy(), se:cdp: ws://localhost:57685/devtoo..., se:cdpVersion: 134.0.6998.119, setWindowRect: true, strictFileInteractability: false, timeouts: {implicit: 0, pageLoad: 300000, script: 30000}, unhandledPromptBehavior: dismiss and notify, webauthn:extension:credBlob: true, webauthn:extension:largeBlob: true, webauthn:extension:minPinLength: true, webauthn:extension:prf: true, webauthn:virtualAuthenticators: true}
+Session ID: 8cf27385973ed316f39ba98ff272513d
+Jan 02, 2026 11:46:19 AM com.automation.NaukriProfileUpdater performDailyUpdate
+SEVERE: Daily update failed: Update failed
+Jan 02, 2026 11:46:20 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: WebDriver closed
+Jan 02, 2026 11:51:10 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: === Starting Daily Naukri Profile Update ===
+Jan 02, 2026 11:51:10 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: Current time: 2026-01-02T11:51:10.068262700
+Jan 02, 2026 11:51:10 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: Is peak time: true
+Jan 02, 2026 11:51:11 AM com.automation.NaukriProfileUpdater initializeDriver
+INFO: WebDriver initialized successfully
+Jan 02, 2026 11:51:11 AM com.automation.NaukriProfileUpdater login
+INFO: Starting login process...
+Jan 02, 2026 11:51:20 AM com.automation.NaukriProfileUpdater login
+INFO: Login successful
+Jan 02, 2026 11:51:23 AM com.automation.NaukriProfileUpdater getCurrentProfile
+INFO: Current headline: SDET (3 Yrs) | Software Quality Assurance | Java Automation Specialist | Solo Automation Engineer | Manual Testing | API & UI (Selenium, Playwright, RestAssured) | Banking & Fintech Domain | CI/CD & AWS Expert
+Jan 02, 2026 11:51:23 AM com.automation.NaukriProfileUpdater generateOptimizedContent
+INFO: Generating optimized content using Gemini AI...
+Jan 02, 2026 11:51:24 AM com.automation.NaukriProfileUpdater generateOptimizedContent
+WARNING: API returned error code: 404
+Jan 02, 2026 11:51:24 AM com.automation.NaukriProfileUpdater generateOptimizedContent
+WARNING: Error response: {  "error": {    "code": 404,    "message": "models/gemini-pro is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",    "status": "NOT_FOUND"  }}
+Jan 02, 2026 11:51:24 AM com.automation.NaukriProfileUpdater addIntelligentVariation
+INFO: Adding intelligent variation to content...
+Jan 02, 2026 11:51:24 AM com.automation.NaukriProfileUpdater addIntelligentVariation
+INFO: Original: SDET (3 Yrs) | Software Quality Assurance | Java Automation Specialist | Solo Automation Engineer | Manual Testing | API & UI (Selenium, Playwright, RestAssured) | Banking & Fintech Domain | CI/CD & AWS Expert
+Jan 02, 2026 11:51:24 AM com.automation.NaukriProfileUpdater addIntelligentVariation
+INFO: Optimized with variation: SDET (3 Yrs)   |   Software Quality Assurance   |   Java Automation Specialist   |   Solo Automation Engineer   |   Manual Testing   |   API & UI (Selenium, Playwright, RestAssured)   |   Banking & Fintech Domain   |   CI/CD & AWS Expert
+Jan 02, 2026 11:51:24 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: Force update enabled - updating profile to trigger 'Recently Updated' status
+Jan 02, 2026 11:51:24 AM com.automation.NaukriProfileUpdater updateProfile
+INFO: Updating profile with optimized content...
+Jan 02, 2026 11:51:33 AM com.automation.NaukriProfileUpdater updateProfile
+INFO: Profile updated successfully!
+Jan 02, 2026 11:51:33 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: ✅ Profile successfully updated! Naukri will show 'Recently Updated'
+Jan 02, 2026 11:51:33 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: === Daily Update Completed Successfully ===
+Jan 02, 2026 11:51:34 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: WebDriver closed
+Jan 02, 2026 11:52:18 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: === Starting Daily Naukri Profile Update ===
+Jan 02, 2026 11:52:18 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: Current time: 2026-01-02T11:52:18.173894200
+Jan 02, 2026 11:52:18 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: Is peak time: true
+Jan 02, 2026 11:52:19 AM com.automation.NaukriProfileUpdater initializeDriver
+INFO: WebDriver initialized successfully
+Jan 02, 2026 11:52:19 AM com.automation.NaukriProfileUpdater login
+INFO: Starting login process...
+Jan 02, 2026 11:52:28 AM com.automation.NaukriProfileUpdater login
+INFO: Login successful
+Jan 02, 2026 11:52:31 AM com.automation.NaukriProfileUpdater getCurrentProfile
+INFO: Current headline: SDET (3 Yrs) | Software Quality Assurance | Java Automation Specialist | Solo Automation Engineer | Manual Testing | API & UI (Selenium, Playwright, RestAssured) | Banking & Fintech Domain | CI/CD & AWS Expert
+Jan 02, 2026 11:52:31 AM com.automation.NaukriProfileUpdater generateOptimizedContent
+INFO: Generating optimized content using Gemini AI...
+Jan 02, 2026 11:52:32 AM com.automation.NaukriProfileUpdater generateOptimizedContent
+WARNING: API returned error code: 404
+Jan 02, 2026 11:52:32 AM com.automation.NaukriProfileUpdater generateOptimizedContent
+WARNING: Error response: {  "error": {    "code": 404,    "message": "models/gemini-pro is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",    "status": "NOT_FOUND"  }}
+Jan 02, 2026 11:52:32 AM com.automation.NaukriProfileUpdater addIntelligentVariation
+INFO: Adding intelligent variation to content...
+Jan 02, 2026 11:52:32 AM com.automation.NaukriProfileUpdater addIntelligentVariation
+INFO: Original: SDET (3 Yrs) | Software Quality Assurance | Java Automation Specialist | Solo Automation Engineer | Manual Testing | API & UI (Selenium, Playwright, RestAssured) | Banking & Fintech Domain | CI/CD & AWS Expert
+Jan 02, 2026 11:52:32 AM com.automation.NaukriProfileUpdater addIntelligentVariation
+INFO: Optimized with variation: SDET (3 Yrs)  |  Software Quality Assurance  |  Java Automation Specialist  |  Banking & Fintech Domain  |  Manual Testing  |  API & UI (Selenium, Playwright, RestAssured)  |  Solo Automation Engineer  |  CI/CD & AWS Expert | OWASP
+Jan 02, 2026 11:52:32 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: Force update enabled - updating profile to trigger 'Recently Updated' status
+Jan 02, 2026 11:52:32 AM com.automation.NaukriProfileUpdater updateProfile
+INFO: Updating profile with optimized content...
+Jan 02, 2026 11:52:42 AM com.automation.NaukriProfileUpdater updateProfile
+INFO: Profile updated successfully!
+Jan 02, 2026 11:52:42 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: ✅ Profile successfully updated! Naukri will show 'Recently Updated'
+Jan 02, 2026 11:52:42 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: === Daily Update Completed Successfully ===
+Jan 02, 2026 11:52:42 AM com.automation.NaukriProfileUpdater performDailyUpdate
+INFO: WebDriver closed
