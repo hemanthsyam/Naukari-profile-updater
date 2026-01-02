@@ -5,27 +5,69 @@ pipeline {
         NAUKRI_USERNAME = credentials('naukri-username')
         NAUKRI_PASSWORD = credentials('naukri-password')
         GEMINI_API_KEY = credentials('gemini-api-key')
+        HEADLESS_MODE = 'true'
     }
 
     stages {
-        stage('Run') {
+        stage('Install Maven') {
             steps {
-                script {
-                    // Run a simple test first
-                    bat 'java -version'
+                echo '📦 Installing Maven...'
+                bat """
+                    echo "Checking for Maven..."
+                    where mvn >nul 2>nul
+                    if %errorlevel% neq 0 (
+                        echo "Maven not found, installing..."
 
-                    // Then try to run your app directly
-                    bat """
-                        cd "%WORKSPACE%"
-                        echo "Running from: %CD%"
-                        dir
+                        REM Download Maven
+                        curl -L -o maven.zip "https://dlcdn.apache.org/maven/maven-3/3.9.12/binaries/apache-maven-3.9.12-bin.zip"
 
-                        REM Try to compile and run
-                        javac -version 2>&1
-                        echo "If you see javac above, Java is working"
-                    """
-                }
+                        REM Extract
+                        powershell -Command "Expand-Archive -Path 'maven.zip' -DestinationPath 'maven' -Force"
+
+                        set MAVEN_HOME=%CD%\\maven\\apache-maven-3.9.12
+                        set PATH=%MAVEN_HOME%\\bin;%PATH%
+
+                        echo "Maven installed at: %MAVEN_HOME%"
+                    ) else (
+                        echo "Maven already installed"
+                    )
+
+                    mvn --version
+                """
             }
+        }
+
+        stage('Checkout and Build') {
+            steps {
+                checkout scm
+
+                bat """
+                    echo "Building with Maven..."
+                    mvn clean compile
+
+                    if %errorlevel% neq 0 (
+                        echo "Build failed!"
+                        exit 1
+                    )
+
+                    echo "✅ Build successful"
+                """
+            }
+        }
+
+        stage('Run Automation') {
+            steps {
+                bat """
+                    echo "Running Naukri updater..."
+                    mvn exec:java -Dexec.mainClass="com.automation.NaukriProfileUpdater"
+                """
+            }
+        }
+    }
+
+    post {
+        always {
+            archiveArtifacts artifacts: '*.log', allowEmptyArchive: true
         }
     }
 }
