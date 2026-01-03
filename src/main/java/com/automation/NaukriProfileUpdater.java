@@ -29,6 +29,11 @@ public class NaukriProfileUpdater {
     private String geminiApiKey;
     private boolean headlessMode;
 
+    // CRITICAL SKILLS LIST - These will NEVER be removed
+    private static final List<String> REQUIRED_KEYWORDS = Arrays.asList(
+            "Selenium", "Playwright", "RestAssured", "Postman", "Java"
+    );
+
     public NaukriProfileUpdater(String username, String password, String geminiApiKey, boolean headlessMode) {
         this.username = username;
         this.password = password;
@@ -113,7 +118,8 @@ public class NaukriProfileUpdater {
 
         } catch (Exception e) {
             logger.warning("Could not extract profile: " + e.getMessage());
-            return "SDET | Software Quality Assurance | Automation Specialist";
+            // Fallback default if extraction fails
+            return "SDET | Java | Selenium | Playwright | RestAssured | Postman | Automation Engineer";
         }
     }
 
@@ -121,6 +127,7 @@ public class NaukriProfileUpdater {
         try {
             logger.info("Calling Gemini AI for content optimization...");
 
+            // NOTE: Using gemini-1.5-flash. Ensure your API Key supports this model.
             URL url = new URL("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + geminiApiKey);
 
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -164,7 +171,16 @@ public class NaukriProfileUpdater {
                         .get(0).getAsJsonObject()
                         .get("text").getAsString().trim();
 
-                return cleanAIResponse(generatedText);
+                String cleanText = cleanAIResponse(generatedText);
+
+                // SAFETY CHECK: If AI removed a critical skill, discard AI result and use Shuffle
+                if (!containsAllCriticalSkills(cleanText)) {
+                    logger.warning("AI response missing critical skills. Discarding and using Shuffle.");
+                    return createSmartVariation(currentContent);
+                }
+
+                return cleanText;
+
             } else {
                 logger.warning("Gemini API failed with code: " + responseCode + ", using Smart Shuffle Fallback");
                 return createSmartVariation(currentContent);
@@ -182,6 +198,12 @@ public class NaukriProfileUpdater {
 
             if (optimizedContent == null || optimizedContent.length() < 10) {
                 logger.warning("Generated content too short. Skipping update.");
+                return;
+            }
+
+            // FINAL SAFETY CHECK
+            if (!containsAllCriticalSkills(optimizedContent)) {
+                logger.severe("ABORTING UPDATE: Optimized content is missing critical skills!");
                 return;
             }
 
@@ -218,46 +240,48 @@ public class NaukriProfileUpdater {
     }
 
     private String buildPrompt(String currentContent) {
-        return "You are an expert resume optimizer. Rewrite this Naukri headline slightly to make it fresh.\n" +
+        return "Rewrite this Naukri headline slightly to change the word order, but KEEP THESE KEYWORDS EXACTLY: " +
+                "Selenium, Playwright, RestAssured, Postman, Java. \n" +
                 "Current: " + currentContent + "\n" +
-                "Rules: \n" +
-                "1. Keep all MAIN tech stacks (Java, Selenium, Playwright, API).\n" +
-                "2. Just reorder the skills or add a synonym like 'SDET' -> 'Automation Engineer'.\n" +
-                "3. Keep under 250 chars. Use '|' separator. No markdown. RETURN ONLY THE TEXT.";
+                "Rules: Keep under 250 chars. Use '|' separator. No markdown. RETURN ONLY THE TEXT.";
     }
 
     private String cleanAIResponse(String text) {
         return text.replaceAll("```.*?```", "").replaceAll("^['\"`]+|['\"`]+$", "").trim();
     }
 
+    /**
+     * Checks if all critical keywords are present (Case Insensitive)
+     */
+    private boolean containsAllCriticalSkills(String content) {
+        String lowerContent = content.toLowerCase();
+        for (String skill : REQUIRED_KEYWORDS) {
+            if (!lowerContent.contains(skill.toLowerCase())) {
+                logger.warning("Missing critical skill: " + skill);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Fallback Logic: Just SHUFFLE the order.
+     * NEVER REPLACE skills.
+     */
     private String createSmartVariation(String content) {
         logger.info("Generating Smart Variation (Shuffle Strategy)...");
 
         List<String> parts = new ArrayList<>(Arrays.asList(content.split("\\|")));
         parts = parts.stream().map(String::trim).collect(Collectors.toList());
 
+        // Pure Shuffle - No replacements
         Collections.shuffle(parts);
-
-        for (int i = 0; i < parts.size(); i++) {
-            String part = parts.get(i);
-
-            if (part.contains("Selenium") && !content.contains("Cypress")) {
-                if (Math.random() < 0.2) {
-                    parts.set(i, part.replace("Selenium", "Cypress"));
-                    logger.info("Swapped Selenium -> Cypress");
-                }
-            }
-            else if (part.contains("RestAssured") && !content.contains("Postman")) {
-                if (Math.random() < 0.2) {
-                    parts.set(i, part.replace("RestAssured", "Postman"));
-                    logger.info("Swapped RestAssured -> Postman");
-                }
-            }
-        }
 
         String result = String.join(" | ", parts);
 
-        if (result.length() > 250) {
+        // Verify we didn't accidentally lose anything (unlikely in shuffle, but good to be safe)
+        if (!containsAllCriticalSkills(result)) {
+            logger.warning("Shuffle validation failed. Returning original.");
             return content;
         }
 
