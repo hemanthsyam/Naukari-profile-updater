@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.logging.*;
+import java.util.stream.Collectors;
 
 public class NaukriProfileUpdater {
 
@@ -27,8 +28,6 @@ public class NaukriProfileUpdater {
     private String password;
     private String geminiApiKey;
     private boolean headlessMode;
-
-    private static final int[] PEAK_HOURS = {4, 8, 17, 20};
 
     public NaukriProfileUpdater(String username, String password, String geminiApiKey, boolean headlessMode) {
         this.username = username;
@@ -51,9 +50,7 @@ public class NaukriProfileUpdater {
     }
 
     public void initializeDriver() {
-        // Use WebDriverManager to ensure the correct driver is always available
         WebDriverManager.chromedriver().setup();
-
         ChromeOptions options = new ChromeOptions();
 
         if (headlessMode) {
@@ -69,8 +66,6 @@ public class NaukriProfileUpdater {
 
         driver = new ChromeDriver(options);
         driver.manage().window().maximize();
-
-        // Initialize WebDriverWait globally
         wait = new WebDriverWait(driver, Duration.ofSeconds(20));
 
         logger.info("WebDriver initialized in " + (headlessMode ? "headless" : "normal") + " mode");
@@ -92,8 +87,6 @@ public class NaukriProfileUpdater {
             WebElement loginButton = driver.findElement(By.xpath("//button[contains(text(),'Login')]"));
             loginButton.click();
 
-            // Wait until URL contains 'mnjuser' (dashboard) or 'homepage'
-            // This replaces Thread.sleep(6000)
             wait.until(ExpectedConditions.or(
                     ExpectedConditions.urlContains("mnjuser"),
                     ExpectedConditions.urlContains("homepage")
@@ -111,13 +104,11 @@ public class NaukriProfileUpdater {
         try {
             driver.get("https://www.naukri.com/mnjuser/profile");
 
-            // Wait for the specific widget container to be visible
             WebElement headline = wait.until(ExpectedConditions.visibilityOfElementLocated(
                     By.xpath("//div[@class='widgetCont']//span[contains(@class, 'resume-headline')] | //div[@class='widgetCont']/div/div")));
 
             String currentHeadline = headline.getText().trim();
             logger.info("Current headline: " + currentHeadline);
-
             return currentHeadline;
 
         } catch (Exception e) {
@@ -130,14 +121,14 @@ public class NaukriProfileUpdater {
         try {
             logger.info("Calling Gemini AI for content optimization...");
 
-            String prompt = buildPrompt(currentContent);
-            // CHANGED: Using gemini-pro instead of flash to avoid 404
-            URL url = new URL("https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=" + geminiApiKey);
+            URL url = new URL("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + geminiApiKey);
+
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
             conn.setDoOutput(true);
 
+            String prompt = buildPrompt(currentContent);
             JsonObject requestBody = new JsonObject();
             com.google.gson.JsonArray contentsArray = new com.google.gson.JsonArray();
             JsonObject contents = new JsonObject();
@@ -175,7 +166,7 @@ public class NaukriProfileUpdater {
 
                 return cleanAIResponse(generatedText);
             } else {
-                logger.warning("Gemini API failed with code: " + responseCode + ", using fallback");
+                logger.warning("Gemini API failed with code: " + responseCode + ", using Smart Shuffle Fallback");
                 return createSmartVariation(currentContent);
             }
 
@@ -187,39 +178,34 @@ public class NaukriProfileUpdater {
 
     public void updateProfile(String optimizedContent) {
         try {
-            logger.info("Updating profile with new content...");
+            logger.info("Updating profile...");
+
+            if (optimizedContent == null || optimizedContent.length() < 10) {
+                logger.warning("Generated content too short. Skipping update.");
+                return;
+            }
 
             driver.get("https://www.naukri.com/mnjuser/profile");
 
-            // 1. Wait for edit icon and scroll it to CENTER
             WebElement editButton = wait.until(ExpectedConditions.presenceOfElementLocated(
                     By.xpath("//span[contains(@class,'edit icon')]")));
 
             ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block: 'center'});", editButton);
-
-            // 2. Click using JS to avoid ElementClickInterceptedException
             wait.until(ExpectedConditions.elementToBeClickable(editButton));
             ((JavascriptExecutor) driver).executeScript("arguments[0].click();", editButton);
 
-            // 3. Wait for the text area (modal animation)
             WebElement headlineField = wait.until(ExpectedConditions.visibilityOfElementLocated(
                     By.id("resumeHeadlineTxt")));
 
-            // Clear and Type
             headlineField.clear();
-            // A small delay is sometimes needed for JS 'clear' events to register on complex forms
             headlineField.sendKeys(Keys.CONTROL + "a");
             headlineField.sendKeys(Keys.DELETE);
             headlineField.sendKeys(optimizedContent);
 
-            // 4. Click Save
             WebElement saveButton = wait.until(ExpectedConditions.elementToBeClickable(
                     By.xpath("//button[@type='submit' and contains(text(),'Save')]")));
 
             ((JavascriptExecutor) driver).executeScript("arguments[0].click();", saveButton);
-
-            // 5. Wait for the success message OR the modal to disappear
-            // This confirms the save actually happened
             wait.until(ExpectedConditions.invisibilityOf(saveButton));
 
             logger.info("✅ Profile updated successfully!");
@@ -231,12 +217,13 @@ public class NaukriProfileUpdater {
         }
     }
 
-    // --- Helper Methods (Prompt, Cleaning, Variation, Screenshot, Main) ---
-
     private String buildPrompt(String currentContent) {
-        return "You are an expert resume optimizer. Rewrite this Naukri headline slightly to make it fresh but keep the same meaning. \n" +
+        return "You are an expert resume optimizer. Rewrite this Naukri headline slightly to make it fresh.\n" +
                 "Current: " + currentContent + "\n" +
-                "Rules: Keep under 250 chars. Use '|' separator. Don't use markdown. return ONLY the headline.";
+                "Rules: \n" +
+                "1. Keep all MAIN tech stacks (Java, Selenium, Playwright, API).\n" +
+                "2. Just reorder the skills or add a synonym like 'SDET' -> 'Automation Engineer'.\n" +
+                "3. Keep under 250 chars. Use '|' separator. No markdown. RETURN ONLY THE TEXT.";
     }
 
     private String cleanAIResponse(String text) {
@@ -244,7 +231,38 @@ public class NaukriProfileUpdater {
     }
 
     private String createSmartVariation(String content) {
-        return content.replace("Selenium", "Playwright").replace("Jenkins", "GitHub Actions");
+        logger.info("Generating Smart Variation (Shuffle Strategy)...");
+
+        List<String> parts = new ArrayList<>(Arrays.asList(content.split("\\|")));
+        parts = parts.stream().map(String::trim).collect(Collectors.toList());
+
+        Collections.shuffle(parts);
+
+        for (int i = 0; i < parts.size(); i++) {
+            String part = parts.get(i);
+
+            if (part.contains("Selenium") && !content.contains("Cypress")) {
+                if (Math.random() < 0.2) {
+                    parts.set(i, part.replace("Selenium", "Cypress"));
+                    logger.info("Swapped Selenium -> Cypress");
+                }
+            }
+            else if (part.contains("RestAssured") && !content.contains("Postman")) {
+                if (Math.random() < 0.2) {
+                    parts.set(i, part.replace("RestAssured", "Postman"));
+                    logger.info("Swapped RestAssured -> Postman");
+                }
+            }
+        }
+
+        String result = String.join(" | ", parts);
+
+        if (result.length() > 250) {
+            return content;
+        }
+
+        logger.info("New Variation: " + result);
+        return result;
     }
 
     private void takeScreenshot(String filename) {
@@ -282,7 +300,6 @@ public class NaukriProfileUpdater {
         String geminiKey = System.getenv("GEMINI_API_KEY");
         String headlessModeStr = System.getenv("HEADLESS_MODE");
 
-        // Simple check
         if (username == null || password == null) {
             System.err.println("❌ Error: Missing Environment Variables");
             System.exit(1);
