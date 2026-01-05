@@ -128,7 +128,7 @@ public class NaukriProfileUpdater {
             logger.info("Calling Gemini AI for content optimization...");
 
             // NOTE: Using gemini-1.5-flash. Ensure your API Key supports this model.
-            URL url = new URL("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + geminiApiKey);
+            URL url = new URL("https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=" + geminiApiKey);
 
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
