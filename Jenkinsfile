@@ -1,6 +1,12 @@
 pipeline {
     agent any
 
+    tools {
+        // This tells Jenkins to use the Maven & JDK we configured in Step 4
+        maven 'maven-3.9' 
+        jdk 'jdk-17'
+    }
+
     environment {
         NAUKRI_USERNAME = credentials('naukri-username')
         NAUKRI_PASSWORD = credentials('naukri-password')
@@ -9,31 +15,23 @@ pipeline {
     }
 
     stages {
-        // "Install Maven" stage is removed because it is now installed on the OS
-
-        stage('Checkout and Build') {
+        stage('Checkout') {
             steps {
-                checkout scm
-                bat """
-                    echo "Building with Maven..."
-                    mvn clean compile
-                """
+                // This will now use the correct git.exe
+                checkout scm 
+            }
+        }
+        
+        stage('Build') {
+            steps {
+                bat 'mvn clean compile'
             }
         }
 
         stage('Run Automation') {
             steps {
-                bat """
-                    echo "Running Naukri updater..."
-                    mvn exec:java -Dexec.mainClass="com.automation.NaukriProfileUpdater"
-                """
+                bat 'mvn exec:java -Dexec.mainClass="com.automation.NaukriProfileUpdater"'
             }
-        }
-    }
-
-    post {
-        always {
-            archiveArtifacts artifacts: '*.log', allowEmptyArchive: true
         }
     }
 }
