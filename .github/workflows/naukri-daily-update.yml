@@ -1,0 +1,30 @@
+name: Daily Naukri Profile Update
+
+on:
+  schedule:
+    # Runs at 03:00 UTC (8:30 AM IST), 08:30 UTC (2:00 PM IST), 11:30 UTC (5:00 PM IST)
+    - cron: '30 3,8,11 * * *'
+  workflow_dispatch: # Allows you to click a button to run it manually
+
+jobs:
+  update-profile:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Run Naukri Updater
+      env:
+        NAUKRI_USERNAME: ${{ secrets.NAUKRI_USERNAME }}
+        NAUKRI_PASSWORD: ${{ secrets.NAUKRI_PASSWORD }}
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        HEADLESS_MODE: "true"
+      run: mvn clean compile exec:java -Dexec.mainClass="com.automation.NaukriProfileUpdater"
