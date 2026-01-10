@@ -77,32 +77,50 @@ public class NaukriProfileUpdater {
     }
 
     public void login() {
-        try {
-            logger.info("Starting login process...");
-            driver.get("https://www.naukri.com/nlogin/login");
-
-            WebElement emailField = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("usernameField")));
-            emailField.clear();
-            emailField.sendKeys(username);
-
-            WebElement passwordField = driver.findElement(By.id("passwordField"));
-            passwordField.clear();
-            passwordField.sendKeys(password);
-
-            WebElement loginButton = driver.findElement(By.xpath("//button[contains(text(),'Login')]"));
-            loginButton.click();
-
-            wait.until(ExpectedConditions.or(
-                    ExpectedConditions.urlContains("mnjuser"),
-                    ExpectedConditions.urlContains("homepage")
-            ));
-
-            logger.info("Login successful");
-
-        } catch (Exception e) {
-            logger.severe("Login failed: " + e.getMessage());
-            throw new RuntimeException("Login failed", e);
+       try {
+        logger.info("Starting Cookie Login...");
+        
+        // 1. Open the domain so we can set cookies
+        driver.get("https://www.naukri.com");
+        
+        // 2. Get cookie from Environment Variable
+        String cookieValue = System.getenv("NAUKRI_AUTH_COOKIE");
+        if (cookieValue == null || cookieValue.isEmpty()) {
+            throw new RuntimeException("NAUKRI_AUTH_COOKIE is missing in GitHub Secrets!");
         }
+
+        // 3. Add the 'nauk_at' cookie (Fixed Name)
+        Cookie cookie = new Cookie.Builder("nauk_at", cookieValue) // <--- CHANGED THIS NAME
+                .domain(".naukri.com")
+                .path("/")
+                .isSecure(true)
+                .build();
+        
+        driver.manage().addCookie(cookie);
+        
+        // 4. Refresh to activate the session
+        driver.navigate().refresh();
+        Thread.sleep(3000); // Wait a bit longer for redirect
+
+        // 5. Verify we are logged in
+        String currentUrl = driver.getCurrentUrl();
+        if (currentUrl.contains("mnjuser") || currentUrl.contains("homepage")) {
+             logger.info("✅ Login successful via Cookie!");
+        } else {
+             // Try forcing the dashboard URL one last time
+             driver.get("https://www.naukri.com/mnjuser/homepage");
+             Thread.sleep(3000);
+             if (driver.getCurrentUrl().contains("mnjuser")) {
+                 logger.info("✅ Login successful after force navigation!");
+             } else {
+                 logger.warning("⚠️ Login might have failed. URL is still: " + driver.getCurrentUrl());
+             }
+        }
+
+    } catch (Exception e) {
+        logger.severe("Cookie login failed: " + e.getMessage());
+        throw new RuntimeException("Login Failed", e);
+    }
     }
 
     public String getCurrentProfile() {
